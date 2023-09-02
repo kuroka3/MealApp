@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_margin="30dp"
+        tools:context=".SchoolInfoActivity">
+
+    <TextView
+            android:id="@+id/school_name"
+            android:text=""
+            android:textSize="25sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    <TextView
+            android:id="@+id/school_address"
+            android:text=""
+            android:textSize="15sp"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    <View
+            android:layout_margin="20dp"
+            android:background="@color/wrap"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"/>
+
+    <EditText
+            android:id="@+id/search_school"
+            android:hint="@string/sch_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:inputType="text"
+            android:minHeight="48dp"
+            android:importantForAutofill="no"/>
+
+    <ScrollView
+            android:layout_marginTop="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/school_info">
+
+        <LinearLayout
+                android:id="@+id/schools"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"/>
+
+    </ScrollView>
+
+</LinearLayout>
