@@ -1,5 +1,7 @@
 package io.github.kuroka3.mealapp.manager.api
 
+import io.github.kuroka3.JSONFile
+import io.github.kuroka3.mealapp.MainActivity
 import io.github.kuroka3.mealapp.manager.classes.Meal
 import io.github.kuroka3.mealapp.manager.classes.School
 import io.github.kuroka3.mealapp.manager.util.SettingsManager
@@ -13,7 +15,7 @@ import java.time.format.DateTimeFormatter
 
 object APIManager {
 
-    const val key = "(YOUR KEY)"
+    const val key = "eeb30871f10842c1bb41b453f283242a"
 
     fun reqMeal(ld: LocalDate): APIResult { return reqMeal(ld.format(DateTimeFormatter.ofPattern("yyyyMMdd"))) }
 
@@ -24,8 +26,21 @@ object APIManager {
                 return APIResult(APIResult.RESULT_ERR, null, "학교가 설정되어있지 않음")
             }
 
+            // 불러온 급식 정보가 캐시에 저장되어있는지 확인
+            val cahce = JSONFile(MainActivity.cachedir, "meal.json")
+            if(cahce.isFile) {
+                cahce.jsonObject?.let {
+                    if (it["edu"] == SettingsManager.edu && it["sch"] == SettingsManager.sch && it["date"] == ymd) {
+                        println("불러옴")
+                        return APIResult(APIResult.RESULT_OK, Meal(it["names"].toString(), it["cal"] as String?, it["ntr"] as String?), null)
+                    }
+                }
+            }
+
+
             // API 요청
-            val url = URL("https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=$key&Type=json&ATPT_OFCDC_SC_CODE=${SettingsManager.edu}&SD_SCHUL_CODE=${SettingsManager.sch}&MLSV_YMD=$ymd")
+            val url =
+                URL("https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=$key&Type=json&ATPT_OFCDC_SC_CODE=${SettingsManager.edu}&SD_SCHUL_CODE=${SettingsManager.sch}&MLSV_YMD=$ymd")
             val req: JSONObject = JSONParser().parse(url.readText()) as JSONObject
 
             // API 요청 실패 거르기
@@ -42,12 +57,34 @@ object APIManager {
             }
 
             // 결과 처리
-            val row: JSONObject = (((req["mealServiceDietInfo"] as JSONArray)[1] as JSONObject)["row"] as JSONArray)[0] as JSONObject
+            val row: JSONObject =
+                (((req["mealServiceDietInfo"] as JSONArray)[1] as JSONObject)["row"] as JSONArray)[0] as JSONObject
             val name = (row["DDISH_NM"] as String).replace("<br/>", "\n")
             val cal = (row["CAL_INFO"] as String).replace("<br/>", "\n")
             val ntr = (row["NTR_INFO"] as String).replace("<br/>", "\n")
 
             val meal = Meal(name, cal, ntr)
+
+            val file = JSONFile(MainActivity.cachedir, "meal.json")
+            //            file.saveJSON(JSONObjectBuilder()
+            //                .put("edu", SettingsManager.edu)
+            //                .put("sch", SettingsManager.sch)
+            //                .put("date", ymd)
+            //                .put("names", meal.names)
+            //                .put("cal", meal.cal)
+            //                .put("ntr", meal.ntr)
+            //                .build()
+            //            )
+            file.saveJSON(JSONObject().also {
+                it["edu"] = SettingsManager.edu
+                it["sch"] = SettingsManager.sch
+                it["date"] = ymd
+                it["names"] = meal.names
+                it["cal"] = meal.cal
+                it["ntr"] = meal.ntr
+            })
+
+            println("요청함")
 
             return APIResult(APIResult.RESULT_OK, meal, null)
         } catch (e: Exception) {

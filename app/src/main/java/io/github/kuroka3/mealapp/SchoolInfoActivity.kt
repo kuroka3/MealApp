@@ -64,7 +64,7 @@ class SchoolInfoActivity : AppCompatActivity() {
         })
     }
 
-    fun loadSch() {
+    private fun loadSch() {
         ThreadManager.runInAnotherThread {
             val result = APIManager.reqSchoolInfo(SettingsManager.edu.toString(), SettingsManager.sch.toString())
 
@@ -155,7 +155,7 @@ class SchoolInfoActivity : AppCompatActivity() {
         }
     }
 
-    fun changeSchTo(edu: String, sch: String) {
+    private fun changeSchTo(edu: String, sch: String) {
         SettingsManager.edu = edu
         SettingsManager.sch = sch
 
@@ -166,7 +166,7 @@ class SchoolInfoActivity : AppCompatActivity() {
         overridePendingTransition(0, 0)
     }
 
-    fun dipToPixels(context: Context, dipValue: Float): Float {
+    private fun dipToPixels(context: Context, dipValue: Float): Float {
         val metrics = context.resources.displayMetrics
         return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dipValue, metrics)
     }
