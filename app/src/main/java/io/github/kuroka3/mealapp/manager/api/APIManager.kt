@@ -1,5 +1,7 @@
 package io.github.kuroka3.mealapp.manager.api
 
+import io.github.kuroka3.JSONFile
+import io.github.kuroka3.mealapp.MainActivity
 import io.github.kuroka3.mealapp.manager.classes.Meal
 import io.github.kuroka3.mealapp.manager.classes.School
 import io.github.kuroka3.mealapp.manager.util.SettingsManager
@@ -13,41 +15,76 @@ import java.time.format.DateTimeFormatter
 
 object APIManager {
 
-    const val key = "(YOUR KEY)"
+    private const val key = "(YOUR KEY)"
 
     fun reqMeal(ld: LocalDate): APIResult { return reqMeal(ld.format(DateTimeFormatter.ofPattern("yyyyMMdd"))) }
 
-    fun reqMeal(ymd: String): APIResult {
+    private fun reqMeal(ymd: String): APIResult {
         try {
             // 학교가 설정되어있는지 확인
             if (!SettingsManager.isCanBeRequested) {
                 return APIResult(APIResult.RESULT_ERR, null, "학교가 설정되어있지 않음")
             }
 
+            // 불러온 급식 정보가 캐시에 저장되어있는지 확인
+            val cahce = JSONFile(MainActivity.cachedir, "meal.json")
+            if(cahce.isFile) {
+                cahce.jsonObject?.let {
+                    if (it["edu"] == SettingsManager.edu && it["sch"] == SettingsManager.sch && it["date"] == ymd) {
+                        println("불러옴")
+                        return APIResult(APIResult.RESULT_OK, Meal(it["names"].toString(), it["cal"] as String?, it["ntr"] as String?), null)
+                    }
+                }
+            }
+
+
             // API 요청
-            val url = URL("https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=$key&Type=json&ATPT_OFCDC_SC_CODE=${SettingsManager.edu}&SD_SCHUL_CODE=${SettingsManager.sch}&MLSV_YMD=$ymd")
+            val url =
+                URL("https://open.neis.go.kr/hub/mealServiceDietInfo?KEY=$key&Type=json&ATPT_OFCDC_SC_CODE=${SettingsManager.edu}&SD_SCHUL_CODE=${SettingsManager.sch}&MLSV_YMD=$ymd")
             val req: JSONObject = JSONParser().parse(url.readText()) as JSONObject
 
             // API 요청 실패 거르기
             try {
                 val result: JSONObject = req["RESULT"] as JSONObject
-                val result_code: String = result["CODE"] as String
-                val result_message: String = result["MESSAGE"] as String
+                val resultCode: String = result["CODE"] as String
+                val resultMessage: String = result["MESSAGE"] as String
 
-                if (result_code.contains("ERROR") || result_code == "INFO-300" || result_code == "INFO-200") {
-                    return APIResult(APIResult.RESULT_ERR, null, result_message)
+                if (resultCode.contains("ERROR") || resultCode == "INFO-300" || resultCode == "INFO-200") {
+                    return APIResult(APIResult.RESULT_ERR, null, resultMessage)
                 }
             } catch (e: NullPointerException) {
                 // 무시
             }
 
             // 결과 처리
-            val row: JSONObject = (((req["mealServiceDietInfo"] as JSONArray)[1] as JSONObject)["row"] as JSONArray)[0] as JSONObject
+            val row: JSONObject =
+                (((req["mealServiceDietInfo"] as JSONArray)[1] as JSONObject)["row"] as JSONArray)[0] as JSONObject
             val name = (row["DDISH_NM"] as String).replace("<br/>", "\n")
             val cal = (row["CAL_INFO"] as String).replace("<br/>", "\n")
             val ntr = (row["NTR_INFO"] as String).replace("<br/>", "\n")
 
             val meal = Meal(name, cal, ntr)
+
+            val file = JSONFile(MainActivity.cachedir, "meal.json")
+            //            file.saveJSON(JSONObjectBuilder()
+            //                .put("edu", SettingsManager.edu)
+            //                .put("sch", SettingsManager.sch)
+            //                .put("date", ymd)
+            //                .put("names", meal.names)
+            //                .put("cal", meal.cal)
+            //                .put("ntr", meal.ntr)
+            //                .build()
+            //            )
+            file.saveJSON(JSONObject().also {
+                it["edu"] = SettingsManager.edu
+                it["sch"] = SettingsManager.sch
+                it["date"] = ymd
+                it["names"] = meal.names
+                it["cal"] = meal.cal
+                it["ntr"] = meal.ntr
+            })
+
+            println("요청함")
 
             return APIResult(APIResult.RESULT_OK, meal, null)
         } catch (e: Exception) {
@@ -68,11 +105,11 @@ object APIManager {
             // API 요청 실패 거르기
             try {
                 val result: JSONObject = req["RESULT"] as JSONObject
-                val result_code: String = result["CODE"] as String
-                val result_message: String = result["MESSAGE"] as String
+                val resultCode: String = result["CODE"] as String
+                val resultMessage: String = result["MESSAGE"] as String
 
-                if (result_code.contains("ERROR") || result_code == "INFO-300" || result_code == "INFO-200") {
-                    return APIResult(APIResult.RESULT_ERR, null, result_message)
+                if (resultCode.contains("ERROR") || resultCode == "INFO-300" || resultCode == "INFO-200") {
+                    return APIResult(APIResult.RESULT_ERR, null, resultMessage)
                 }
             } catch (e: NullPointerException) {
                 // 무시
@@ -88,13 +125,13 @@ object APIManager {
 
                 val edu = obj["ATPT_OFCDC_SC_CODE"] as String
                 val sch = obj["SD_SCHUL_CODE"] as String
-                val sch_name = obj["SCHUL_NM"] as String
+                val schName = obj["SCHUL_NM"] as String
                 val adr = obj["ORG_RDNMA"] as String
 
                 val school = School.Builder()
                     .edu(edu)
                     .sch(sch)
-                    .sch_name(sch_name)
+                    .schName(schName)
                     .adr(adr)
                     .build()
 
@@ -117,11 +154,11 @@ object APIManager {
             // API 요청 실패 거르기
             try {
                 val result: JSONObject = req["RESULT"] as JSONObject
-                val result_code: String = result["CODE"] as String
-                val result_message: String = result["MESSAGE"] as String
+                val resultCode: String = result["CODE"] as String
+                val resultMessage: String = result["MESSAGE"] as String
 
-                if (result_code.contains("ERROR") || result_code == "INFO-300" || result_code == "INFO-200") {
-                    return APIResult(APIResult.RESULT_ERR, null, result_message)
+                if (resultCode.contains("ERROR") || resultCode == "INFO-300" || resultCode == "INFO-200") {
+                    return APIResult(APIResult.RESULT_ERR, null, resultMessage)
                 }
             } catch (e: NullPointerException) {
                 // 무시
@@ -132,13 +169,13 @@ object APIManager {
 
             val obj = row[0] as JSONObject
 
-            val sch_name = obj["SCHUL_NM"] as String
+            val schName = obj["SCHUL_NM"] as String
             val adr = obj["ORG_RDNMA"] as String
 
             val school = School.Builder()
                 .edu(edu)
                 .sch(sch)
-                .sch_name(sch_name)
+                .schName(schName)
                 .adr(adr)
                 .build()
 
