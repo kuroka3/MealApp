@@ -21,7 +21,7 @@ class MealAlarmReceiver : BroadcastReceiver() {
                 if (result.result == APIResult.RESULT_OK) {
                     val body = result.body as Meal
 
-                    MainActivity.getInstance()?.notificationMeal(body.toMealString(show_cal = false, show_ntr = false))
+                    MainActivity.getInstance()?.notificationMeal(body.toMealString(showCal = false, showNtr = false))
                     MainActivity.getInstance()?.registerNotif(SettingsManager.alarm_h, SettingsManager.alarm_m)
                 }
             }

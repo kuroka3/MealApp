@@ -3,16 +3,16 @@ package io.github.kuroka3.mealapp.manager.classes
 import io.github.kuroka3.mealapp.manager.util.SettingsManager
 
 data class Meal(val names: String, val cal: String?, val ntr: String?) {
-    fun toMealString(show_cal: Boolean = SettingsManager.show_cal, show_ntr: Boolean = SettingsManager.show_ntr): String {
+    fun toMealString(showCal: Boolean = SettingsManager.show_cal, showNtr: Boolean = SettingsManager.show_ntr): String {
         val sb = StringBuilder()
 
         sb.append(this.names)
 
-        if (show_cal) {
+        if (showCal) {
             sb.append("\n\n=-=-=-=-=-=\n\n${this.cal ?: "칼로리 정보 없음"}")
         }
 
-        if (show_ntr) {
+        if (showNtr) {
             sb.append("\n\n=-=-=-=-=-=\n\n${this.ntr ?: "영양 정보 없음"}")
         }
 

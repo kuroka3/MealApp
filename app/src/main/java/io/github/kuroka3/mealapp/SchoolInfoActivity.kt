@@ -2,6 +2,7 @@ package io.github.kuroka3.mealapp
 
 import android.content.Context
 import android.graphics.Paint
+import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -21,9 +22,9 @@ import io.github.kuroka3.mealapp.manager.util.ThreadManager
 
 class SchoolInfoActivity : AppCompatActivity() {
 
-    lateinit var school_name: TextView
-    lateinit var school_address: TextView
-    lateinit var edt_search: EditText
+    private lateinit var schoolName: TextView
+    private lateinit var schoolAddress: TextView
+    lateinit var edtSearch: EditText
     lateinit var list: LinearLayout
 
     var loadThread: Thread? = null
@@ -32,14 +33,14 @@ class SchoolInfoActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_school_info)
 
-        school_name = findViewById(R.id.school_name)
-        school_address = findViewById(R.id.school_address)
-        edt_search = findViewById(R.id.search_school)
+        schoolName = findViewById(R.id.school_name)
+        schoolAddress = findViewById(R.id.school_address)
+        edtSearch = findViewById(R.id.search_school)
         list = findViewById(R.id.schools)
 
         loadSch()
 
-        edt_search.addTextChangedListener(object : TextWatcher {
+        edtSearch.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
                 // 필요없음
             }
@@ -53,7 +54,7 @@ class SchoolInfoActivity : AppCompatActivity() {
 
                 loadThread = ThreadManager.runInAnotherThread {
                     try {
-                        val result = APIManager.reqSchools(edt_search.text.toString())
+                        val result = APIManager.reqSchools(edtSearch.text.toString())
 
                         runOnUiThread { showSearchResult(result) }
                     } catch (e: InterruptedException) {
@@ -69,18 +70,18 @@ class SchoolInfoActivity : AppCompatActivity() {
             val result = APIManager.reqSchoolInfo(SettingsManager.edu.toString(), SettingsManager.sch.toString())
 
             if (result.result == APIResult.RESULT_ERR && result.err is String) {
-                runOnUiThread { school_name.text = result.err }
+                runOnUiThread { schoolName.text = result.err }
             } else if (result.result == APIResult.RESULT_EXCEPTION && result.err is Exception) {
                 runOnUiThread {
-                    school_name.text = result.err.toString()
-                    school_address.text = result.err.message
+                    schoolName.text = result.err.toString()
+                    schoolAddress.text = result.err.message
                 }
             } else {
                 val school = result.body as School
 
                 runOnUiThread {
-                    school_name.text = school.sch_name
-                    school_address.text = school.adr
+                    schoolName.text = school.schName
+                    schoolAddress.text = school.adr
                 }
             }
         }
@@ -103,7 +104,9 @@ class SchoolInfoActivity : AppCompatActivity() {
                 val wholeLayoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
                 )
-                wholeLayoutParams.setMargins(0, dipToPixels(applicationContext, 10.0F).toInt(), 0, dipToPixels(applicationContext, 10.0F).toInt())
+                val tendip = dipToPixels(applicationContext).toInt()
+
+                wholeLayoutParams.setMargins(0, tendip, 0, tendip)
                 wholeLayout.layoutParams = wholeLayoutParams
 
                 val subLayout = LinearLayout(applicationContext)
@@ -115,7 +118,7 @@ class SchoolInfoActivity : AppCompatActivity() {
                 subLayout.layoutParams = subLayoutParams
 
                 val resultSchName = TextView(applicationContext)
-                resultSchName.text = sch.sch_name
+                resultSchName.text = sch.schName
                 resultSchName.textSize = 20F
                 resultSchName.paintFlags = resultSchName.paintFlags or Paint.FAKE_BOLD_TEXT_FLAG
                 val resultSchNameParams = LinearLayout.LayoutParams(
@@ -155,19 +158,28 @@ class SchoolInfoActivity : AppCompatActivity() {
         }
     }
 
+    @Suppress("DEPRECATION")
     private fun changeSchTo(edu: String, sch: String) {
         SettingsManager.edu = edu
         SettingsManager.sch = sch
 
         finish()
-        overridePendingTransition(0, 0)
+        if (Build.VERSION.SDK_INT >= 34) {
+            overrideActivityTransition(OVERRIDE_TRANSITION_CLOSE, 0, 0)
+        } else {
+            overridePendingTransition(0, 0)
+        }
         val intent = intent
         startActivity(intent)
-        overridePendingTransition(0, 0)
+        if (Build.VERSION.SDK_INT >= 34) {
+            overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, 0, 0)
+        } else {
+            overridePendingTransition(0, 0)
+        }
     }
 
-    private fun dipToPixels(context: Context, dipValue: Float): Float {
+    private fun dipToPixels(context: Context): Float {
         val metrics = context.resources.displayMetrics
-        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dipValue, metrics)
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10.0F, metrics)
     }
 }

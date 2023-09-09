@@ -8,7 +8,7 @@ object ThreadManager {
         return thr
     }
 
-    fun runLater(runnable: Runnable, delay: Long): Thread {
+    /*fun runLater(runnable: Runnable, delay: Long): Thread {
         val thr = Thread {
             Thread.sleep(delay)
             runnable.run()
@@ -26,5 +26,5 @@ object ThreadManager {
         }
         thr.start()
         return thr
-    }
+    }*/
 }

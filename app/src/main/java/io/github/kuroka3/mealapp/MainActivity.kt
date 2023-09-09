@@ -170,15 +170,24 @@ class MainActivity : AppCompatActivity() {
         notificationManager.notify(0, notif)
     }
 
+    @Suppress("DEPRECATION")
     private fun onResult(result: ActivityResult) {
         val resultCode = result.resultCode
 
         if(resultCode == SETTINGS_COMPLETE) {
             finish()
-            overridePendingTransition(0, 0)
+            if (Build.VERSION.SDK_INT >= 34) {
+                overrideActivityTransition(OVERRIDE_TRANSITION_CLOSE, 0, 0)
+            } else {
+                overridePendingTransition(0, 0)
+            }
             val intent = intent
             startActivity(intent)
-            overridePendingTransition(0, 0)
+            if (Build.VERSION.SDK_INT >= 34) {
+                overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, 0, 0)
+            } else {
+                overridePendingTransition(0, 0)
+            }
         }
     }
 

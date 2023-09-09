@@ -15,11 +15,11 @@ import java.time.format.DateTimeFormatter
 
 object APIManager {
 
-    const val key = "eeb30871f10842c1bb41b453f283242a"
+    private const val key = "eeb30871f10842c1bb41b453f283242a"
 
     fun reqMeal(ld: LocalDate): APIResult { return reqMeal(ld.format(DateTimeFormatter.ofPattern("yyyyMMdd"))) }
 
-    fun reqMeal(ymd: String): APIResult {
+    private fun reqMeal(ymd: String): APIResult {
         try {
             // 학교가 설정되어있는지 확인
             if (!SettingsManager.isCanBeRequested) {
@@ -46,11 +46,11 @@ object APIManager {
             // API 요청 실패 거르기
             try {
                 val result: JSONObject = req["RESULT"] as JSONObject
-                val result_code: String = result["CODE"] as String
-                val result_message: String = result["MESSAGE"] as String
+                val resultCode: String = result["CODE"] as String
+                val resultMessage: String = result["MESSAGE"] as String
 
-                if (result_code.contains("ERROR") || result_code == "INFO-300" || result_code == "INFO-200") {
-                    return APIResult(APIResult.RESULT_ERR, null, result_message)
+                if (resultCode.contains("ERROR") || resultCode == "INFO-300" || resultCode == "INFO-200") {
+                    return APIResult(APIResult.RESULT_ERR, null, resultMessage)
                 }
             } catch (e: NullPointerException) {
                 // 무시
@@ -105,11 +105,11 @@ object APIManager {
             // API 요청 실패 거르기
             try {
                 val result: JSONObject = req["RESULT"] as JSONObject
-                val result_code: String = result["CODE"] as String
-                val result_message: String = result["MESSAGE"] as String
+                val resultCode: String = result["CODE"] as String
+                val resultMessage: String = result["MESSAGE"] as String
 
-                if (result_code.contains("ERROR") || result_code == "INFO-300" || result_code == "INFO-200") {
-                    return APIResult(APIResult.RESULT_ERR, null, result_message)
+                if (resultCode.contains("ERROR") || resultCode == "INFO-300" || resultCode == "INFO-200") {
+                    return APIResult(APIResult.RESULT_ERR, null, resultMessage)
                 }
             } catch (e: NullPointerException) {
                 // 무시
@@ -125,13 +125,13 @@ object APIManager {
 
                 val edu = obj["ATPT_OFCDC_SC_CODE"] as String
                 val sch = obj["SD_SCHUL_CODE"] as String
-                val sch_name = obj["SCHUL_NM"] as String
+                val schName = obj["SCHUL_NM"] as String
                 val adr = obj["ORG_RDNMA"] as String
 
                 val school = School.Builder()
                     .edu(edu)
                     .sch(sch)
-                    .sch_name(sch_name)
+                    .schName(schName)
                     .adr(adr)
                     .build()
 
@@ -154,11 +154,11 @@ object APIManager {
             // API 요청 실패 거르기
             try {
                 val result: JSONObject = req["RESULT"] as JSONObject
-                val result_code: String = result["CODE"] as String
-                val result_message: String = result["MESSAGE"] as String
+                val resultCode: String = result["CODE"] as String
+                val resultMessage: String = result["MESSAGE"] as String
 
-                if (result_code.contains("ERROR") || result_code == "INFO-300" || result_code == "INFO-200") {
-                    return APIResult(APIResult.RESULT_ERR, null, result_message)
+                if (resultCode.contains("ERROR") || resultCode == "INFO-300" || resultCode == "INFO-200") {
+                    return APIResult(APIResult.RESULT_ERR, null, resultMessage)
                 }
             } catch (e: NullPointerException) {
                 // 무시
@@ -169,13 +169,13 @@ object APIManager {
 
             val obj = row[0] as JSONObject
 
-            val sch_name = obj["SCHUL_NM"] as String
+            val schName = obj["SCHUL_NM"] as String
             val adr = obj["ORG_RDNMA"] as String
 
             val school = School.Builder()
                 .edu(edu)
                 .sch(sch)
-                .sch_name(sch_name)
+                .schName(schName)
                 .adr(adr)
                 .build()
 

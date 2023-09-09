@@ -3,7 +3,6 @@ package io.github.kuroka3.mealapp.utils
 import android.app.Dialog
 import android.app.TimePickerDialog
 import android.app.TimePickerDialog.OnTimeSetListener
-import android.icu.util.Calendar
 import android.os.Bundle
 import android.widget.TimePicker
 import androidx.fragment.app.DialogFragment
@@ -11,7 +10,6 @@ import io.github.kuroka3.mealapp.manager.util.SettingsManager
 
 class TimePickerFragment : DialogFragment(), OnTimeSetListener {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val c = Calendar.getInstance()
         val hour = SettingsManager.alarm_h
         val minute = SettingsManager.alarm_m
         return TimePickerDialog(requireActivity(), this, hour, minute, false)
